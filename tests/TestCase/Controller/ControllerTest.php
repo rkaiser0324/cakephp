@@ -74,14 +74,13 @@ class ControllerTest extends TestCase
     }
 
     /**
-     * test autoload modelClass
+     * test autoload default table
      */
     public function testTableAutoload(): void
     {
         $request = new ServerRequest(['url' => 'controller/posts/index']);
         $Controller = new Controller($request, new Response(), 'Articles');
 
-        $this->assertFalse(isset($Controller->SiteArticles));
         $this->assertInstanceOf(
             'TestApp\Model\Table\ArticlesTable',
             $Controller->Articles
@@ -100,7 +99,7 @@ class ControllerTest extends TestCase
 
         $this->expectNotice();
         $this->expectNoticeMessage(sprintf(
-            'Undefined property: Controller::$Foo in %s on line %s',
+            'Undefined property: Controller::$Foo in %s on line %s.',
             __FILE__,
             __LINE__ + 2
         ));
@@ -108,43 +107,36 @@ class ControllerTest extends TestCase
     }
 
     /**
-     * testLoadModel method
+     * testGetTable method
      */
-    public function testLoadModel(): void
+    public function testGetTable(): void
     {
         $request = new ServerRequest(['url' => 'controller/posts/index']);
         $Controller = new Controller($request, new Response());
 
         $this->assertFalse(isset($Controller->Articles));
 
-        $result = $Controller->loadModel('Articles');
+        $result = $Controller->getTable('Articles');
         $this->assertInstanceOf(
             'TestApp\Model\Table\ArticlesTable',
             $result
-        );
-        $this->assertInstanceOf(
-            'TestApp\Model\Table\ArticlesTable',
-            $Controller->Articles
         );
     }
 
     /**
      * @link https://github.com/cakephp/cakephp/issues/14804
      */
-    public function testAutoLoadModelUsingFqcn(): void
+    public function testAutoLoadTableUsingFqcn(): void
     {
         Configure::write('App.namespace', 'TestApp');
         $Controller = new ArticlesController(new ServerRequest(), new Response());
 
-        $this->assertInstanceOf(ArticlesTable::class, $Controller->Articles);
+        $this->assertInstanceOf(ArticlesTable::class, $Controller->getTable());
 
         Configure::write('App.namespace', 'App');
     }
 
-    /**
-     * testLoadModel method from a plugin controller
-     */
-    public function testLoadModelInPlugins(): void
+    public function testGetTableInPlugins(): void
     {
         $this->loadPlugins(['TestPlugin']);
 
@@ -153,38 +145,31 @@ class ControllerTest extends TestCase
 
         $this->assertFalse(isset($Controller->TestPluginComments));
 
-        $result = $Controller->loadModel('TestPlugin.TestPluginComments');
+        $result = $Controller->getTable('TestPlugin.TestPluginComments');
         $this->assertInstanceOf(
             'TestPlugin\Model\Table\TestPluginCommentsTable',
             $result
         );
-        $this->assertInstanceOf(
-            'TestPlugin\Model\Table\TestPluginCommentsTable',
-            $Controller->TestPluginComments
-        );
     }
 
     /**
-     * Test that the constructor sets modelClass properly.
+     * Test that the constructor sets defaultTable properly.
      */
-    public function testConstructSetModelClass(): void
+    public function testConstructSetDefaultTable(): void
     {
         $this->loadPlugins(['TestPlugin']);
 
         $request = new ServerRequest();
         $response = new Response();
         $controller = new PostsController($request, $response);
-        $this->assertInstanceOf('Cake\ORM\Table', $controller->loadModel());
-        $this->assertInstanceOf('Cake\ORM\Table', $controller->Posts);
+        $this->assertInstanceOf('Cake\ORM\Table', $controller->getTable());
 
         $controller = new AdminPostsController($request, $response);
-        $this->assertInstanceOf('Cake\ORM\Table', $controller->loadModel());
-        $this->assertInstanceOf('Cake\ORM\Table', $controller->Posts);
+        $this->assertInstanceOf('Cake\ORM\Table', $controller->getTable());
 
         $request = $request->withParam('plugin', 'TestPlugin');
         $controller = new CommentsController($request, $response);
-        $this->assertInstanceOf('TestPlugin\Model\Table\CommentsTable', $controller->loadModel());
-        $this->assertInstanceOf('TestPlugin\Model\Table\CommentsTable', $controller->Comments);
+        $this->assertInstanceOf('TestPlugin\Model\Table\CommentsTable', $controller->getTable());
     }
 
     /**

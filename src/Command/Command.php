@@ -19,7 +19,6 @@ namespace Cake\Command;
 use Cake\Console\Arguments;
 use Cake\Console\BaseCommand;
 use Cake\Console\ConsoleIo;
-use Cake\Datasource\ModelAwareTrait;
 use Cake\Log\LogTrait;
 use Cake\ORM\Locator\LocatorAwareTrait;
 
@@ -34,24 +33,6 @@ class Command extends BaseCommand
 {
     use LocatorAwareTrait;
     use LogTrait;
-    use ModelAwareTrait;
-
-    /**
-     * Constructor
-     *
-     * By default CakePHP will construct command objects when
-     * building the CommandCollection for your application.
-     */
-    public function __construct()
-    {
-        $this->modelFactory('Table', function ($alias) {
-            return $this->getTableLocator()->get($alias);
-        });
-
-        if (isset($this->modelClass)) {
-            $this->loadModel();
-        }
-    }
 
     /**
      * Implement this method with your command's logic.

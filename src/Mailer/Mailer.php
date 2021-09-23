@@ -16,7 +16,6 @@ namespace Cake\Mailer;
 
 use BadMethodCallException;
 use Cake\Core\StaticConfigTrait;
-use Cake\Datasource\ModelAwareTrait;
 use Cake\Event\EventListenerInterface;
 use Cake\Log\Log;
 use Cake\Mailer\Exception\MissingActionException;
@@ -131,7 +130,6 @@ use InvalidArgumentException;
  */
 class Mailer implements EventListenerInterface
 {
-    use ModelAwareTrait;
     use StaticConfigTrait;
 
     /**
