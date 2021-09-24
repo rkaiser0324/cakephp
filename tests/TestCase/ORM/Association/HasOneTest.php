@@ -33,7 +33,7 @@ class HasOneTest extends TestCase
      *
      * @var array
      */
-    protected $fixtures = ['core.Users', 'core.Profiles'];
+    protected $fixtures = ['core.Articles', 'core.Authors', 'core.Users', 'core.Profiles'];
 
     /**
      * @var bool
@@ -352,6 +352,34 @@ class HasOneTest extends TestCase
         $this->assertTrue($association->cascadeDelete($user));
         $query = $this->profile->query()->where(['user_id' => 3]);
         $this->assertSame(0, $query->count(), 'Matching record was deleted.');
+    }
+
+    /**
+     * Tests cascading deletes on entities with null binding key.
+     */
+    public function testCascadeDeleteNullBinding(): void
+    {
+        $Articles = $this->getTableLocator()->get('Articles');
+        $Authors = $this->getTableLocator()->get('Authors');
+
+        $config = [
+            'dependent' => true,
+            'sourceTable' => $Articles,
+            'targetTable' => $Authors,
+            'bindingKey' => 'author_id',
+            'foreignKey' => 'id',
+            'cascadeCallbacks' => false,
+        ];
+
+        $association = new HasOne('Authors', $config);
+
+        $entity = new Entity(['author_id' => null, 'title' => 'this has no author', 'body' => 'I am abandoned', 'published' => 'N']);
+        $Articles->save($entity);
+
+        $this->assertTrue($association->cascadeDelete($entity));
+
+        $query = $Authors->query();
+        $this->assertSame(4, $query->count(), 'No authors should be deleted');
     }
 
     /**
